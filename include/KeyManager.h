@@ -9,5 +9,5 @@ private:
 
     void switchMode();
 public:
-    void update(class PhysicsEngine& physics, class RenderEngine& render);
+    void update(PhysicsEngine& physics, RenderEngine& render);
 };

@@ -3,19 +3,27 @@
 #include "Body.h"
 #include "GravityPoint.h"
 
-void KeyManager::update(class PhysicsEngine& physics, class RenderEngine& render) {
-    if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+void KeyManager::update(PhysicsEngine& physics, RenderEngine& render) {
+    static bool pressed = false;
+    if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
         switch (mode) {
             case Mode::spawn:
-                physics.addBody(Body(GetMousePosition(), render.getMass(), render.getColor()));
+                if (!pressed) {
+                    physics.addBody(Body(GetMousePosition(), render.getMass(), render.getColor()));
+                    pressed = true;
+                }
                 break;
             case Mode::drag:
-                physics.dragging = true;
+                if (physics.mouseOverBodyIndex() != -1) {
+                    if (!physics.dragging) physics.index = physics.mouseOverBodyIndex();
+                    physics.dragging = true;
+                }
                 break;
         }
     }
     if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
         physics.dragging = false;
+        pressed = false;
     }
     if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT)) physics.addGravityPoint(GravityPoint(GetMousePosition(), render.getMass(), RED));
     if (IsKeyPressed(KEY_M)) switchMode();

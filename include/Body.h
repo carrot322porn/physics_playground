@@ -10,6 +10,6 @@ public:
     Color color;
 
     Body(Vector2 pos, float m, Color col);
-    void applyForce(Vector2 force, float dt);
+    void applyForce(Vector2 force, float timeX, float dt);
     void update(float dt);
 };

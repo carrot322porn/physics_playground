@@ -4,7 +4,7 @@
 
 PhysicsEngine::PhysicsEngine() {
     Gconst = 100.f;
-    stop = false;
+    timeX = 1.f;
 }
 
 void PhysicsEngine::addBody(Body body) {
@@ -17,27 +17,16 @@ void PhysicsEngine::addGravityPoint(GravityPoint point) {
 
 void PhysicsEngine::update(float dt) {
     if (dragging) {
-        static int index = 0;
-
         mousePositions.push_back(GetMousePosition());
         if (mousePositions.size() > 7) mousePositions.erase(mousePositions.begin());
 
-        for (int i = 0; i < bodies.size(); i++) {
-            if (mouseOverBody(bodies[i])) {
-                index = i;
-                break;
-            }
-        }
-
-        drag(bodies[index]);
+        if (!bodies.empty()) drag(bodies[index]);
     }
 
-    if (stop) return;
+    if (timeIsStopped()) return;
 
     for (int i = 0; i < bodies.size(); i++) {
-
         Vector2 force = {0.0, 0.0};
-
         //bodies
         for (int j = 0; j < bodies.size(); j++) {
             if (i == j) continue;
@@ -54,7 +43,6 @@ void PhysicsEngine::update(float dt) {
             force.x += (dx / dist) * F;
             force.y += (dy / dist) * F;
         }
-
         //gravity points
         for (int j = 0; j < gravityPoints.size(); j++) {
             double dx = gravityPoints[j].position.x - bodies[i].position.x;
@@ -70,21 +58,25 @@ void PhysicsEngine::update(float dt) {
             force.y += (dy / dist) * F;
         }
 
-        bodies[i].applyForce(force, dt);
+        bodies[i].applyForce(force, timeX, dt);
         bodies[i].update(dt);
     }
 }
 
 void PhysicsEngine::timeStop() {
-    if (!stop) stop = true;
-    else stop = false;
+    static float lastTime = timeX;
+    if (timeX != 0.f) {
+        lastTime = timeX;
+        timeX = 0.f;
+    }
+    else timeX = lastTime;
 }
 
 void PhysicsEngine::reset() {
     bodies.clear();
     gravityPoints.clear();
     lastVelocity.clear();
-    stop = false;
+    timeX = 1.f;
     Gconst = 100.f;
 }
 
@@ -96,17 +88,19 @@ void PhysicsEngine::drag(Body& body) {
 
 
 bool PhysicsEngine::timeIsStopped() {
-    if (stop) return true;
+    if (timeX == 0.f) return true;
     else return false;
 }
 
-bool PhysicsEngine::mouseOverBody(const Body& body) {
-    double dx = GetMousePosition().x - body.position.x;
-    double dy = GetMousePosition().y - body.position.y;
+int PhysicsEngine::mouseOverBodyIndex() {
+    for (int i = 0; i < bodies.size(); i++) {
+        double dx = GetMousePosition().x - bodies[i].position.x;
+        double dy = GetMousePosition().y - bodies[i].position.y;
 
-    double distSq = dx*dx + dy*dy;
-    double radiusSq = body.radius * body.radius;
+        double distSq = dx*dx + dy*dy;
+        double radiusSq = bodies[i].radius * bodies[i].radius;
 
-    if (distSq <= radiusSq) return true;
-    else return false;
+        if (distSq <= radiusSq) return i;
+    }
+    return -1;
 }

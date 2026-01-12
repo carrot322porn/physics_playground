@@ -2,22 +2,22 @@
 #include "raylib.h"
 #include <cmath>
 
-void Body::applyForce(Vector2 force, float dt) {
-    velocity.x += (force.x / mass) * dt;
-    velocity.y += (force.y / mass) * dt;
+void Body::applyForce(Vector2 force, float timeX, float dt) {
+    velocity.x += (force.x / mass) * dt * timeX;
+    velocity.y += (force.y / mass) * dt * timeX;
 }
 
 void Body::update(float dt) {
-    Body::position.x += Body::velocity.x * dt;
-    Body::position.y += Body::velocity.y * dt;
+    position.x += velocity.x * dt;
+    position.y += velocity.y * dt;
 }
 
 Body::Body(Vector2 pos, float m, Color col = WHITE) {
-    Body::position = pos;
-    Body::velocity = {0.f, 0.f};
-    Body::mass = m;
-    Body::radius = std::sqrt(m);
-    Body::color = col;
+    position = pos;
+    velocity = {0.f, 0.f};
+    mass = m;
+    radius = std::sqrt(m);
+    color = col;
 }
 
 

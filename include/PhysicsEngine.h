@@ -8,12 +8,12 @@ private:
     double Gconst;
     std::vector<Vector2> lastVelocity;
     std::vector<Vector2> mousePositions;
-    bool stop;
+    float timeX;
 
-    bool mouseOverBody(const Body& body);
     void drag(Body& body);
 public:
     bool dragging = false;
+    int index = -1;
 
     std::vector<Body> bodies;
     std::vector<GravityPoint> gravityPoints;
@@ -25,5 +25,6 @@ public:
     void update(float dt);
     void timeStop();
     void reset();
+    int mouseOverBodyIndex();
     bool timeIsStopped();
 };
