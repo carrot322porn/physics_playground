@@ -14,8 +14,9 @@ void KeyManager::update(PhysicsEngine& physics, RenderEngine& render) {
                 }
                 break;
             case Mode::drag:
-                if (physics.mouseOverBodyIndex() != -1) {
-                    if (!physics.dragging) physics.index = physics.mouseOverBodyIndex();
+                int idx = physics.mouseOverBodyIndex();
+                if (idx != -1) {
+                    if (!physics.dragging) physics.index = idx;
                     physics.dragging = true;
                 }
                 break;

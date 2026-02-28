@@ -11,8 +11,8 @@ Color RenderEngine::getColor() {
 }
 
 void RenderEngine::draw(PhysicsEngine& physics, float dt) {
-    std::vector<Body> b = physics.bodies;
-    std::vector<GravityPoint> g = physics.gravityPoints;
+    const auto& b = physics.bodies;
+    const auto& g = physics.gravityPoints;
 
     for (int i = 0; i < b.size(); i++) {
         DrawCircleV(b[i].position, b[i].radius, b[i].color);

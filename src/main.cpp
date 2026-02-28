@@ -4,7 +4,7 @@
 #include "KeyManager.h"
 
 int main() {
-    InitWindow(1920, 1080, "Fortnite porn");
+    InitWindow(1920, 1080, "Physics playground");
     SetTargetFPS(60);
 
     PhysicsEngine physics;
