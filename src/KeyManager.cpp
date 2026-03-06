@@ -3,33 +3,46 @@
 #include "Body.h"
 #include "GravityPoint.h"
 
-void KeyManager::update(PhysicsEngine& physics, RenderEngine& render) {
+void KeyManager::update(PhysicsEngine& physics, RenderEngine& render, const Camera2D& camera) {
     static bool pressed = false;
+    Vector2 mouseWorld = GetScreenToWorld2D(GetMousePosition(), camera);
+
     if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
         switch (mode) {
             case Mode::spawn:
                 if (!pressed) {
-                    physics.addBody(Body(GetMousePosition(), render.getMass(), render.getColor()));
+                    physics.addBody(Body(mouseWorld, render.getMass(), render.getColor()));
                     pressed = true;
                 }
                 break;
-            case Mode::drag:
-                int idx = physics.mouseOverBodyIndex();
+            case Mode::drag: {
+                int idx = physics.mouseOverBodyIndex(camera);
                 if (idx != -1) {
                     if (!physics.dragging) physics.index = idx;
                     physics.dragging = true;
                 }
                 break;
+            }
         }
     }
     if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
         physics.dragging = false;
         pressed = false;
     }
-    if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT)) physics.addGravityPoint(GravityPoint(GetMousePosition(), render.getMass(), RED));
+    if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT)) {
+        physics.addGravityPoint(GravityPoint(mouseWorld, render.getMass(), RED));
+    }
     if (IsKeyPressed(KEY_M)) switchMode();
     if (IsKeyPressed(KEY_SPACE)) physics.timeStop();
     if (IsKeyPressed(KEY_R)) physics.reset();
+
+    const float massStep = 50.0f;
+    if (IsKeyPressed(KEY_EQUAL) || IsKeyPressed(KEY_KP_ADD)) {
+        render.changeMass(massStep);
+    }
+    if (IsKeyPressed(KEY_MINUS) || IsKeyPressed(KEY_KP_SUBTRACT)) {
+        render.changeMass(-massStep);
+    }
 }
 
 void KeyManager::switchMode() {

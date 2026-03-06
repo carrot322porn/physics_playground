@@ -1,4 +1,5 @@
 #pragma once
+#include "raylib.h"
 #include "Body.h"
 #include "GravityPoint.h"
 #include <vector>
@@ -22,9 +23,9 @@ public:
 
     void addBody(Body body);
     void addGravityPoint(GravityPoint gravityPoint);
-    void update(float dt);
+    void update(float dt, const Camera2D& camera);
     void timeStop();
     void reset();
-    int mouseOverBodyIndex();
+    int mouseOverBodyIndex(const Camera2D& camera);
     bool timeIsStopped();
 };

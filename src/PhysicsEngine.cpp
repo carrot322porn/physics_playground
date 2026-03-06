@@ -15,10 +15,11 @@ void PhysicsEngine::addGravityPoint(GravityPoint point) {
     gravityPoints.push_back(point);
 }
 
-void PhysicsEngine::update(float dt) {
+void PhysicsEngine::update(float dt, const Camera2D& camera) {
     // ================= DRAG =================
     if (dragging) {
-        mousePositions.push_back(GetMousePosition());
+        Vector2 mouseWorld = GetScreenToWorld2D(GetMousePosition(), camera);
+        mousePositions.push_back(mouseWorld);
         if (mousePositions.size() > 7) mousePositions.erase(mousePositions.begin());
 
         if (index >= 0 && index < bodies.size()) drag(bodies[index]);
@@ -129,7 +130,9 @@ void PhysicsEngine::reset() {
 }
 
 void PhysicsEngine::drag(Body& body) {
-    body.position = GetMousePosition();
+    if (mousePositions.empty()) return;
+
+    body.position = mousePositions.back();
     body.velocity.x = (mousePositions.back().x - mousePositions.front().x) * 3;
     body.velocity.y = (mousePositions.back().y - mousePositions.front().y) * 3;
 }
@@ -140,10 +143,12 @@ bool PhysicsEngine::timeIsStopped() {
     else return false;
 }
 
-int PhysicsEngine::mouseOverBodyIndex() {
+int PhysicsEngine::mouseOverBodyIndex(const Camera2D& camera) {
+    Vector2 mouseWorld = GetScreenToWorld2D(GetMousePosition(), camera);
+
     for (int i = 0; i < bodies.size(); i++) {
-        double dx = GetMousePosition().x - bodies[i].position.x;
-        double dy = GetMousePosition().y - bodies[i].position.y;
+        double dx = mouseWorld.x - bodies[i].position.x;
+        double dy = mouseWorld.y - bodies[i].position.y;
 
         double distSq = dx*dx + dy*dy;
         double radiusSq = bodies[i].radius * bodies[i].radius;

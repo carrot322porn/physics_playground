@@ -12,6 +12,8 @@ private:
 public:
     float getMass();
     Color getColor();
-    void draw(PhysicsEngine& physics, float dt);
-    void update();
+    void drawWorld(PhysicsEngine& physics);
+    void drawUI(PhysicsEngine& physics, float dt);
+    void update(Camera2D& camera);
+    void changeMass(float delta);
 };

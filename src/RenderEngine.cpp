@@ -10,7 +10,14 @@ Color RenderEngine::getColor() {
     return currcolor;
 }
 
-void RenderEngine::draw(PhysicsEngine& physics, float dt) {
+void RenderEngine::changeMass(float delta) {
+    currmass += delta;
+    if (currmass < 50.0f) currmass = 50.0f;
+    tim = true;
+    timer.reset();
+}
+
+void RenderEngine::drawWorld(PhysicsEngine& physics) {
     const auto& b = physics.bodies;
     const auto& g = physics.gravityPoints;
 
@@ -20,7 +27,9 @@ void RenderEngine::draw(PhysicsEngine& physics, float dt) {
     for (int i = 0; i < g.size(); i++) {
         DrawCircleV(g[i].position, g[i].radius, g[i].color);
     }
+}
 
+void RenderEngine::drawUI(PhysicsEngine& physics, float dt) {
     if (tim) {
         if (!timer.update(dt)) {
             DrawText(TextFormat("Mass = %.0f", currmass), 1920 / 2.5, 900.f, 50, WHITE);
@@ -31,23 +40,23 @@ void RenderEngine::draw(PhysicsEngine& physics, float dt) {
         }
     }
 
-    if (physics.timeIsStopped()) DrawText("TIME IS STOPPED", 1920 / 2.7, 100.f, 50, WHITE);
+    if (physics.timeIsStopped()) {
+        DrawText("TIME IS STOPPED", 1920 / 2.7, 100.f, 50, WHITE);
+    }
 }
 
-void RenderEngine::update() {
+void RenderEngine::update(Camera2D& camera) {
     float wheel = GetMouseWheelMove();
 
-    if (wheel > 0) {
-        currmass += wheel * 10;
-        tim = true;
-        timer.reset();
+    if (wheel != 0) {
+        camera.zoom += wheel * 0.1f;
+        if (camera.zoom < 0.1f) camera.zoom = 0.1f;
     }
 
-    if (wheel < 0) {
-        if (currmass > 10.f) {
-            currmass -= -wheel * 10;
-            tim = true;
-            timer.reset();
-        }
+    Vector2 delta = GetMouseDelta();
+
+    if (IsMouseButtonDown(MOUSE_BUTTON_MIDDLE)) {
+        camera.target.x -= delta.x / camera.zoom;
+        camera.target.y -= delta.y / camera.zoom;
     }
 }

@@ -9,5 +9,5 @@ private:
 
     void switchMode();
 public:
-    void update(PhysicsEngine& physics, RenderEngine& render);
+    void update(PhysicsEngine& physics, RenderEngine& render, const Camera2D& camera);
 };
