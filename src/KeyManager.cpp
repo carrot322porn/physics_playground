@@ -43,6 +43,16 @@ void KeyManager::update(PhysicsEngine& physics, RenderEngine& render, const Came
     if (IsKeyPressed(KEY_MINUS) || IsKeyPressed(KEY_KP_SUBTRACT)) {
         render.changeMass(-massStep);
     }
+
+    const float timeStep = 0.25f;
+    if (IsKeyPressed(KEY_PERIOD)) {
+        physics.changeTimeX(timeStep);
+        render.showTimeX();
+    }
+    if (IsKeyPressed(KEY_COMMA)) {
+        physics.changeTimeX(-timeStep);
+        render.showTimeX();
+    }
 }
 
 void KeyManager::switchMode() {

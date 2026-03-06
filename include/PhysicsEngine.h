@@ -25,6 +25,8 @@ public:
     void addGravityPoint(GravityPoint gravityPoint);
     void update(float dt, const Camera2D& camera);
     void timeStop();
+    void changeTimeX(float delta);
+    float getTimeX() const;
     void reset();
     int mouseOverBodyIndex(const Camera2D& camera);
     bool timeIsStopped();

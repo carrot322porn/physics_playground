@@ -17,6 +17,11 @@ void RenderEngine::changeMass(float delta) {
     timer.reset();
 }
 
+void RenderEngine::showTimeX() {
+    showTimeXLabel = true;
+    timeXTimer.reset();
+}
+
 void RenderEngine::drawWorld(PhysicsEngine& physics) {
     const auto& b = physics.bodies;
     const auto& g = physics.gravityPoints;
@@ -30,6 +35,16 @@ void RenderEngine::drawWorld(PhysicsEngine& physics) {
 }
 
 void RenderEngine::drawUI(PhysicsEngine& physics, float dt) {
+    if (showTimeXLabel) {
+        if (!timeXTimer.update(dt)) {
+            DrawText(TextFormat("TimeX = %.1f", physics.getTimeX()), 40, 40, 40, WHITE);
+        }
+        else {
+            showTimeXLabel = false;
+            timeXTimer.reset();
+        }
+    }
+
     if (tim) {
         if (!timer.update(dt)) {
             DrawText(TextFormat("Mass = %.0f", currmass), 1920 / 2.5, 900.f, 50, WHITE);
@@ -54,8 +69,7 @@ void RenderEngine::update(Camera2D& camera) {
     }
 
     Vector2 delta = GetMouseDelta();
-
-    if (IsMouseButtonDown(MOUSE_BUTTON_MIDDLE)) {
+    if (IsMouseButtonDown(MOUSE_BUTTON_MIDDLE) || IsMouseButtonDown(MOUSE_BUTTON_RIGHT)) {
         camera.target.x -= delta.x / camera.zoom;
         camera.target.y -= delta.y / camera.zoom;
     }

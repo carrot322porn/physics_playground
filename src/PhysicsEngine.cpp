@@ -28,87 +28,98 @@ void PhysicsEngine::update(float dt, const Camera2D& camera) {
 
     if (timeIsStopped()) return;
 
-    // ================= MERGE =================
-    for (int i = 0; i < bodies.size(); i++) {
-        for (int j = i + 1; j < bodies.size(); j++) {
+    float scaledDt = dt * timeX;
+    if (scaledDt <= 0.0f) return;
 
-            Vector2 d = {
-                bodies[j].position.x - bodies[i].position.x,
-                bodies[j].position.y - bodies[i].position.y
-            };
+    const float maxStepDt = 1.0f / 240.0f;
+    int steps = static_cast<int>(std::ceil(scaledDt / maxStepDt));
+    if (steps < 1) steps = 1;
+    if (steps > 200) steps = 200;
+    const float stepDt = scaledDt / static_cast<float>(steps);
 
-            float distSq = d.x*d.x + d.y*d.y;
-            float r = bodies[i].radius + bodies[j].radius;
+    for (int step = 0; step < steps; step++) {
+        // ================= MERGE =================
+        for (int i = 0; i < bodies.size(); i++) {
+            for (int j = i + 1; j < bodies.size(); j++) {
 
-            if (distSq <= r*r) {
-                Body& a = bodies[i];
-                Body& b = bodies[j];
-
-                float newMass = a.mass + b.mass;
-
-                Vector2 newVel = {
-                    (a.velocity.x * a.mass + b.velocity.x * b.mass) / newMass,
-                    (a.velocity.y * a.mass + b.velocity.y * b.mass) / newMass
+                Vector2 d = {
+                    bodies[j].position.x - bodies[i].position.x,
+                    bodies[j].position.y - bodies[i].position.y
                 };
 
-                Vector2 newPos = {
-                    (a.position.x * a.mass + b.position.x * b.mass) / newMass,
-                    (a.position.y * a.mass + b.position.y * b.mass) / newMass
-                };
+                float distSq = d.x*d.x + d.y*d.y;
+                float r = bodies[i].radius + bodies[j].radius;
 
-                a.mass = newMass;
-                a.velocity = newVel;
-                a.position = newPos;
-                a.radius = sqrt(newMass);
+                if (distSq <= r*r) {
+                    Body& a = bodies[i];
+                    Body& b = bodies[j];
 
-                bodies.erase(bodies.begin() + j);
-                j--;
+                    float newMass = a.mass + b.mass;
+
+                    Vector2 newVel = {
+                        (a.velocity.x * a.mass + b.velocity.x * b.mass) / newMass,
+                        (a.velocity.y * a.mass + b.velocity.y * b.mass) / newMass
+                    };
+
+                    Vector2 newPos = {
+                        (a.position.x * a.mass + b.position.x * b.mass) / newMass,
+                        (a.position.y * a.mass + b.position.y * b.mass) / newMass
+                    };
+
+                    a.mass = newMass;
+                    a.velocity = newVel;
+                    a.position = newPos;
+                    a.radius = sqrt(newMass);
+
+                    bodies.erase(bodies.begin() + j);
+                    j--;
+                }
             }
         }
-    }
 
-    // ================= GRAVITY =================
-    for (int i = 0; i < bodies.size(); i++) {
-        Vector2 force = {0.f, 0.f};
+        // ================= GRAVITY =================
+        for (int i = 0; i < bodies.size(); i++) {
+            Vector2 force = {0.f, 0.f};
 
-        for (int j = 0; j < bodies.size(); j++) {
-            if (i == j) continue;
+            for (int j = 0; j < bodies.size(); j++) {
+                if (i == j) continue;
 
-            Vector2 d = {
-                bodies[j].position.x - bodies[i].position.x,
-                bodies[j].position.y - bodies[i].position.y
-            };
+                Vector2 d = {
+                    bodies[j].position.x - bodies[i].position.x,
+                    bodies[j].position.y - bodies[i].position.y
+                };
 
-            float distSq = d.x*d.x + d.y*d.y;
-            if (distSq < 25.0f) distSq = 25.0f;
+                float distSq = d.x*d.x + d.y*d.y;
+                if (distSq < 25.0f) distSq = 25.0f;
 
-            float dist = sqrt(distSq);
-            float F = Gconst * bodies[i].mass * bodies[j].mass / distSq;
+                float dist = sqrt(distSq);
+                float F = Gconst * bodies[i].mass * bodies[j].mass / distSq;
 
-            force.x += (d.x / dist) * F;
-            force.y += (d.y / dist) * F;
+                force.x += (d.x / dist) * F;
+                force.y += (d.y / dist) * F;
+            }
+
+            for (int j = 0; j < gravityPoints.size(); j++) {
+                float dx = gravityPoints[j].position.x - bodies[i].position.x;
+                float dy = gravityPoints[j].position.y - bodies[i].position.y;
+
+                float distSq = dx*dx + dy*dy;
+                if (distSq < 25.0f) distSq = 25.0f;
+
+                float dist = sqrt(distSq);
+                float F = Gconst * bodies[i].mass * gravityPoints[j].mass / distSq;
+
+                force.x += (dx / dist) * F;
+                force.y += (dy / dist) * F;
+            }
+
+            bodies[i].applyForce(force, stepDt);
         }
 
-        for (int j = 0; j < gravityPoints.size(); j++) {
-            float dx = gravityPoints[j].position.x - bodies[i].position.x;
-            float dy = gravityPoints[j].position.y - bodies[i].position.y;
-
-            float distSq = dx*dx + dy*dy;
-            if (distSq < 25.0f) distSq = 25.0f;
-
-            float dist = sqrt(distSq);
-            float F = Gconst * bodies[i].mass * gravityPoints[j].mass / distSq;
-
-            force.x += (dx / dist) * F;
-            force.y += (dy / dist) * F;
+        // ================= INTEGRATION =================
+        for (int i = 0; i < bodies.size(); i++) {
+            bodies[i].update(stepDt);
         }
-
-        bodies[i].applyForce(force, timeX, dt);
-    }
-
-    // ================= INTEGRATION =================
-    for (int i = 0; i < bodies.size(); i++) {
-        bodies[i].update(dt);
     }
 }
 
@@ -119,6 +130,15 @@ void PhysicsEngine::timeStop() {
         timeX = 0.f;
     }
     else timeX = lastTime;
+}
+
+void PhysicsEngine::changeTimeX(float delta) {
+    timeX += delta;
+    if (timeX < 0.0f) timeX = 0.0f;
+}
+
+float PhysicsEngine::getTimeX() const {
+    return timeX;
 }
 
 void PhysicsEngine::reset() {

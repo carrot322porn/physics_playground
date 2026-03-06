@@ -6,7 +6,9 @@
 class RenderEngine {
 private:
     Timer timer;
+    Timer timeXTimer;
     bool tim = false;
+    bool showTimeXLabel = false;
     float currmass = 100.f;
     Color currcolor = WHITE;
 public:
@@ -16,4 +18,5 @@ public:
     void drawUI(PhysicsEngine& physics, float dt);
     void update(Camera2D& camera);
     void changeMass(float delta);
+    void showTimeX();
 };
