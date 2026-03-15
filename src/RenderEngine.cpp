@@ -69,7 +69,8 @@ void RenderEngine::update(Camera2D& camera) {
     }
 
     Vector2 delta = GetMouseDelta();
-    if (IsMouseButtonDown(MOUSE_BUTTON_MIDDLE) || IsMouseButtonDown(MOUSE_BUTTON_RIGHT)) {
+    if (IsMouseButtonDown(MOUSE_BUTTON_MIDDLE)) {
+        // "Grab" the world: move camera opposite to mouse
         camera.target.x -= delta.x / camera.zoom;
         camera.target.y -= delta.y / camera.zoom;
     }
