@@ -11,6 +11,9 @@ private:
     bool showTimeXLabel = false;
     float currmass = 100.f;
     Color currcolor = WHITE;
+    bool panning = false;
+    Vector2 panStartMouseScreen = {0.0f, 0.0f};
+    Vector2 panStartTarget = {0.0f, 0.0f};
 public:
     float getMass();
     Color getColor();

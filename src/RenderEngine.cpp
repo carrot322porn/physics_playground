@@ -68,9 +68,24 @@ void RenderEngine::update(Camera2D& camera) {
         if (camera.zoom < 0.1f) camera.zoom = 0.1f;
     }
 
-    Vector2 delta = GetMouseDelta();
-    if (IsMouseButtonDown(MOUSE_BUTTON_MIDDLE)) {
-        camera.target.x -= delta.x / camera.zoom;
-        camera.target.y -= delta.y / camera.zoom;
+    if (IsMouseButtonPressed(MOUSE_BUTTON_MIDDLE)) {
+        panning = true;
+        panStartMouseScreen = GetMousePosition();
+        panStartTarget = camera.target;
+    }
+
+    if (panning && IsMouseButtonDown(MOUSE_BUTTON_MIDDLE)) {
+        Vector2 currentMouse = GetMousePosition();
+        Vector2 delta = {
+            currentMouse.x - panStartMouseScreen.x,
+            currentMouse.y - panStartMouseScreen.y
+        };
+
+        camera.target.x = panStartTarget.x - delta.x / camera.zoom;
+        camera.target.y = panStartTarget.y - delta.y / camera.zoom;
+    }
+
+    if (IsMouseButtonReleased(MOUSE_BUTTON_MIDDLE)) {
+        panning = false;
     }
 }
